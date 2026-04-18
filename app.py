@@ -4,10 +4,9 @@ import joblib
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
-
 # ============================================================
 # PAGE CONFIG — harus dipanggil sebelum element lain apapun
-# ============================================================
+
 st.set_page_config(
     page_title="Student Placement Predictor",
     page_icon="🎓",
@@ -15,9 +14,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ============================================================
-# CUSTOM CSS
-# ============================================================
+# css custom
 st.markdown("""
 <style>
     /* Reduce top padding */
@@ -59,9 +56,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ============================================================
-# LOAD MODELS — .pkl berada di root repo (sejajar app.py)
-# ============================================================
+
+# model load
 @st.cache_resource
 def load_models():
     try:
@@ -75,9 +71,7 @@ def load_models():
 
 classifier_model, regressor_model = load_models()
 
-# ============================================================
 # SIDEBAR
-# ============================================================
 with st.sidebar:
     st.markdown("# 🎓 Placement Predictor")
     st.caption("Powered by LightGBM + XGBoost")
