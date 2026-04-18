@@ -1,77 +1,63 @@
 import streamlit as st
 import pandas as pd
 import joblib
-from pathlib import Path
-
-# ==============================
-# PATH CONFIG
-# ==============================
-BASE_DIR = Path(__file__).parent
-MODEL_PATH = BASE_DIR / "models" / "classifier_model.pkl"
-DATA_SAMPLE_PATH = BASE_DIR / "artifacts" / "classification" / "X_train.csv"
 
 # ==============================
 # LOAD MODEL
 # ==============================
 @st.cache_resource
-def load_model():
-    return joblib.load(MODEL_PATH)
+def load_models():
+    clf = joblib.load("classifier_model.pkl")
+    reg = joblib.load("regressor_model.pkl")
+    return clf, reg
 
-@st.cache_data
-def load_sample():
-    return pd.read_csv(DATA_SAMPLE_PATH)
+classifier_model, regressor_model = load_models()
 
-model = load_model()
-df_sample = load_sample()
+st.title("🎓 Student Placement & Salary Prediction")
+
+st.write("Masukkan data mahasiswa:")
 
 # ==============================
-# UI
+# INPUT (WAJIB SESUAI DATA TRAINING)
 # ==============================
-st.title("🎓 Student Placement Prediction App")
-st.write("Masukkan data mahasiswa untuk memprediksi apakah akan ter-placed atau tidak.")
+age = st.number_input("Age", 18, 40, 22)
+cgpa = st.number_input("CGPA", 0.0, 10.0, 7.0)
+internships = st.number_input("Internships", 0, 10, 1)
+projects = st.number_input("Projects", 0, 20, 2)
 
-st.subheader("📥 Input Data")
-
-input_data = {}
-
-# Generate input otomatis berdasarkan dataset
-for col in df_sample.columns:
-    if df_sample[col].dtype == "object":
-        input_data[col] = st.selectbox(
-            f"{col}",
-            options=df_sample[col].dropna().unique()
-        )
-    else:
-        input_data[col] = st.number_input(
-            f"{col}",
-            value=float(df_sample[col].mean())
-        )
+# categorical (contoh, sesuaikan!)
+gender = st.selectbox("Gender", ["Male", "Female"])
+stream = st.selectbox("Stream", ["CS", "IT", "ECE", "MECH"])
+hostel = st.selectbox("Hostel", ["Yes", "No"])
 
 # ==============================
 # PREDICTION
 # ==============================
-if st.button("🔍 Prediksi"):
-    input_df = pd.DataFrame([input_data])
+if st.button("🔍 Predict"):
+    input_df = pd.DataFrame({
+        "age": [age],
+        "cgpa": [cgpa],
+        "internships": [internships],
+        "projects": [projects],
+        "gender": [gender],
+        "stream": [stream],
+        "hostel": [hostel]
+    })
 
     try:
-        prediction = model.predict(input_df)[0]
+        # Classification
+        placement = classifier_model.predict(input_df)[0]
 
-        st.subheader("📊 Hasil Prediksi")
+        # Regression (hanya jika placed)
+        salary = regressor_model.predict(input_df)[0]
 
-        if prediction == 1:
+        st.subheader("📊 Hasil")
+
+        if placement == 1:
             st.success("✅ Mahasiswa kemungkinan TER-PLACED")
+            st.info(f"💰 Prediksi Gaji: {salary:.2f} LPA")
         else:
             st.error("❌ Mahasiswa kemungkinan TIDAK ter-placed")
 
     except Exception as e:
-        st.error(f"Terjadi error saat prediksi: {e}")
-
-# ==============================
-# DEBUG INFO (optional)
-# ==============================
-with st.expander("🔧 Debug Info"):
-    st.write("Kolom yang digunakan model:")
-    st.write(df_sample.columns.tolist())
-
-    st.write("Contoh data:")
-    st.dataframe(df_sample.head())
+        st.error(f"❌ Error: {e}")
