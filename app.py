@@ -12,8 +12,8 @@ st.markdown("Aplikasi ini memprediksi status penempatan kerja dan estimasi gaji 
 @st.cache_resource
 def load_models():
     # Gunakan path relatif yang aman untuk Streamlit Cloud
-    clf_path = "models/classifier_model.pkl"
-    reg_path = "models/regressor_model.pkl"
+    clf_path = "classifier_model.pkl"
+    reg_path = "regressor_model.pkl"
     
     if not os.path.exists(clf_path):
         st.error(f"File {clf_path} tidak ditemukan!")
