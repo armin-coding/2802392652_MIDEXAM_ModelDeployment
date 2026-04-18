@@ -61,3 +61,16 @@ if st.button("🔍 Predict"):
 
     except Exception as e:
         st.error(f"❌ Error: {e}")
+
+st.subheader("🔍 Debug: Required Features")
+
+preprocessor = classifier_model.named_steps["preprocessor"]
+
+num_cols = preprocessor.transformers_[0][2]
+cat_cols = preprocessor.transformers_[1][2]
+
+all_features = list(num_cols) + list(cat_cols)
+
+st.write("Numerical features:", num_cols)
+st.write("Categorical features:", cat_cols)
+st.write("ALL REQUIRED FEATURES:", all_features)
