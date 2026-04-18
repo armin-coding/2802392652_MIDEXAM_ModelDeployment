@@ -19,8 +19,7 @@ st.title("🎓 Student Placement & Salary Prediction")
 st.write("Isi data berikut untuk memprediksi placement dan estimasi gaji.")
 
 # ==============================
-# INPUT FEATURES (100% MATCH)
-# ==============================
+# INPUT FEATURES 
 st.subheader("📥 Academic Performance")
 
 ssc = st.number_input("SSC Percentage", 0.0, 100.0, 70.0)
@@ -52,9 +51,7 @@ gender = st.selectbox("Gender", ["Male", "Female"])
 # ⚠️ treat as categorical (as per your model)
 extracurricular = st.selectbox("Extracurricular Activities", ["Yes", "No"])
 
-# ==============================
-# PREDICTION
-# ==============================
+
 if st.button("🔍 Predict"):
     
     input_df = pd.DataFrame([{
