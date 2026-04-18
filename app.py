@@ -3,7 +3,7 @@ import pandas as pd
 import joblib
 
 # ==============================
-# LOAD MODEL
+# LOAD MODELS
 # ==============================
 @st.cache_resource
 def load_models():
@@ -13,64 +13,95 @@ def load_models():
 
 classifier_model, regressor_model = load_models()
 
+st.set_page_config(page_title="Student Placement Predictor", layout="centered")
+
 st.title("🎓 Student Placement & Salary Prediction")
-
-st.write("Masukkan data mahasiswa:")
+st.write("Isi data berikut untuk memprediksi placement dan estimasi gaji.")
 
 # ==============================
-# INPUT (WAJIB SESUAI DATA TRAINING)
+# INPUT FEATURES (100% MATCH)
 # ==============================
-age = st.number_input("Age", 18, 40, 22)
+st.subheader("📥 Academic Performance")
+
+ssc = st.number_input("SSC Percentage", 0.0, 100.0, 70.0)
+hsc = st.number_input("HSC Percentage", 0.0, 100.0, 70.0)
+degree = st.number_input("Degree Percentage", 0.0, 100.0, 75.0)
 cgpa = st.number_input("CGPA", 0.0, 10.0, 7.0)
-internships = st.number_input("Internships", 0, 10, 1)
-projects = st.number_input("Projects", 0, 20, 2)
+entrance = st.number_input("Entrance Exam Score", 0.0, 100.0, 60.0)
 
-# categorical (contoh, sesuaikan!)
+st.subheader("💻 Skills")
+
+technical = st.number_input("Technical Skill Score", 0.0, 100.0, 70.0)
+soft = st.number_input("Soft Skill Score", 0.0, 100.0, 70.0)
+
+st.subheader("📊 Experience")
+
+internship = st.number_input("Internship Count", 0, 10, 1)
+projects = st.number_input("Live Projects", 0, 10, 1)
+work_exp = st.number_input("Work Experience (Months)", 0, 60, 0)
+certifications = st.number_input("Certifications", 0, 20, 2)
+
+st.subheader("📅 Activity & Attendance")
+
+attendance = st.number_input("Attendance Percentage", 0.0, 100.0, 75.0)
+
+st.subheader("👤 Personal Info")
+
 gender = st.selectbox("Gender", ["Male", "Female"])
-stream = st.selectbox("Stream", ["CS", "IT", "ECE", "MECH"])
-hostel = st.selectbox("Hostel", ["Yes", "No"])
+
+# ⚠️ treat as categorical (as per your model)
+extracurricular = st.selectbox("Extracurricular Activities", ["Yes", "No"])
 
 # ==============================
 # PREDICTION
 # ==============================
 if st.button("🔍 Predict"):
-    input_df = pd.DataFrame({
-        "age": [age],
-        "cgpa": [cgpa],
-        "internships": [internships],
-        "projects": [projects],
-        "gender": [gender],
-        "stream": [stream],
-        "hostel": [hostel]
-    })
+    
+    input_df = pd.DataFrame([{
+        "ssc_percentage": ssc,
+        "hsc_percentage": hsc,
+        "degree_percentage": degree,
+        "cgpa": cgpa,
+        "entrance_exam_score": entrance,
+        "technical_skill_score": technical,
+        "soft_skill_score": soft,
+        "internship_count": internship,
+        "live_projects": projects,
+        "work_experience_months": work_exp,
+        "certifications": certifications,
+        "attendance_percentage": attendance,
+        "gender": gender,
+        "extracurricular_activities": extracurricular
+    }])
 
     try:
         # Classification
         placement = classifier_model.predict(input_df)[0]
 
-        # Regression (hanya jika placed)
-        salary = regressor_model.predict(input_df)[0]
-
-        st.subheader("📊 Hasil")
+        st.subheader("📊 Result")
 
         if placement == 1:
-            st.success("✅ Mahasiswa kemungkinan TER-PLACED")
-            st.info(f"💰 Prediksi Gaji: {salary:.2f} LPA")
+            st.success("✅ Likely to be PLACED")
+
+            # Regression only if placed
+            salary = regressor_model.predict(input_df)[0]
+            st.info(f"💰 Estimated Salary: {salary:.2f} LPA")
+
         else:
-            st.error("❌ Mahasiswa kemungkinan TIDAK ter-placed")
+            st.error("❌ Likely NOT placed")
 
     except Exception as e:
-        st.error(f"❌ Error: {e}")
+        st.error(f"Error during prediction: {e}")
 
-st.subheader("🔍 Debug: Required Features")
-
-preprocessor = classifier_model.named_steps["preprocessor"]
-
-num_cols = preprocessor.transformers_[0][2]
-cat_cols = preprocessor.transformers_[1][2]
-
-all_features = list(num_cols) + list(cat_cols)
-
-st.write("Numerical features:", num_cols)
-st.write("Categorical features:", cat_cols)
-st.write("ALL REQUIRED FEATURES:", all_features)
+# ==============================
+# OPTIONAL DEBUG
+# ==============================
+with st.expander("🔧 Debug Info"):
+    st.write("Model expects these features:")
+    st.write([
+        "ssc_percentage", "hsc_percentage", "degree_percentage", "cgpa",
+        "entrance_exam_score", "technical_skill_score", "soft_skill_score",
+        "internship_count", "live_projects", "work_experience_months",
+        "certifications", "attendance_percentage", "gender",
+        "extracurricular_activities"
+    ])
